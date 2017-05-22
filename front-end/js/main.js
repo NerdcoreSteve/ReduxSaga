@@ -20,9 +20,27 @@ const
         }
     },
     messageSaga = function* () {
+        const
+            response = yield call(
+                fetch,
+                '/message',
+                {
+                    method: 'post',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        data: {
+                            message: store.getState()
+                        }
+                    })
+                }),
+            json = yield call([response, response.json])
+
         yield put({
+            ...json,
             type: 'MESSAGE_RECIEVED',
-            response: 'this is a response'
         })
     },
     messageSender = function* () {
@@ -36,12 +54,8 @@ const
                 <input
                     type="text"
                     onChange={({target:{value: text}}) => store.dispatch({type: 'ADD_TEXT', text})}
-                    value={store.getState()}/>
-                <button
-                    onClick={() => store.dispatch({type: 'SEND_MESSAGE'})}
-                    type="button">
-                        Send Message
-                </button>
+                    value={store.getState()}
+                    onKeyPress={e => { if (e.key === 'Enter') store.dispatch({type: 'SEND_MESSAGE'}) } }/>
             </div>,
             document.getElementById('root'))
 
