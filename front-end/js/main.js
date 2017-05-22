@@ -2,8 +2,6 @@ require('whatwg-fetch')
 require('babel-polyfill')
 
 const
-    R = require('ramda'),
-    tap = x => {console.log(x); return x},
     React = require('react'),
     ReactDOM = require('react-dom'),
     {createStore, applyMiddleware} = require('redux'),
@@ -15,9 +13,30 @@ const
                 return action.text
             case 'MESSAGE_RECIEVED':
                 return action.response
+            case 'GOT_POKEMON':
+                return action.pokemon
             default:
                 return state
         }
+    },
+    pokemonSaga = function* () {
+        const
+            response = yield call(
+                fetch,
+                '/pokemon',
+                {
+                    method: 'get',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                }),
+            json = yield call([response, response.json])
+
+        yield put({
+            ...json,
+            type: 'GOT_POKEMON',
+        })
     },
     messageSaga = function* () {
         const
@@ -43,8 +62,9 @@ const
             type: 'MESSAGE_RECIEVED',
         })
     },
-    messageSender = function* () {
+    rootSaga = function* () {
         yield takeEvery('SEND_MESSAGE', messageSaga)
+        yield takeEvery('GET_POKEMON', pokemonSaga)
     },
     store = createStore(reducer, applyMiddleware(sagaMiddleware)),
     render = () =>
@@ -53,12 +73,18 @@ const
                 <p>{store.getState()}</p>
                 <input
                     type="text"
-                    onChange={({target:{value: text}}) => store.dispatch({type: 'ADD_TEXT', text})}
-                    value={store.getState()}
-                    onKeyPress={e => { if (e.key === 'Enter') store.dispatch({type: 'SEND_MESSAGE'}) } }/>
+                    onChange = {({target:{value: text}}) => store.dispatch({type: 'ADD_TEXT', text})}
+                    value = {store.getState()}
+                    onKeyPress=
+                        {e => { if (e.key === 'Enter') store.dispatch({type: 'SEND_MESSAGE'}) } }/>
+                <button
+                    onClick={() => store.dispatch({type: 'GET_POKEMON'})}
+                    type="button">
+                        Get Pokemon
+                </button>
             </div>,
             document.getElementById('root'))
 
-sagaMiddleware.run(messageSender)
+sagaMiddleware.run(rootSaga)
 store.subscribe(render)
 render()

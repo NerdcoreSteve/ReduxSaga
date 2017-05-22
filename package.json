@@ -20,7 +20,8 @@
     "babelify": "^7.3.0",
     "body-parser": "^1.17.1",
     "express": "^4.14.0",
-    "pug": "^2.0.0-beta6"
+    "pug": "^2.0.0-beta6",
+    "random-number": "0.0.7"
   },
   "devDependencies": {
     "babel-plugin-transform-object-rest-spread": "^6.20.2",
